@@ -24,6 +24,7 @@ void MainWindow::on_pb_login_clicked()
 
 void MainWindow::login(QString userName, QString pwd)
 {
+    mUrl = QUrl("http://xueqiu.com/user/login");
     // make password to md5
     QByteArray byte_array;
     byte_array.append(pwd);
@@ -36,12 +37,10 @@ void MainWindow::login(QString userName, QString pwd)
     postString.append(userName);
     QByteArray postData = postString.toUtf8();
 
-    mNetRequest.setUrl(QUrl("http://xueqiu.com/user/login"));
-    mNetRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    mNetRequest.setUrl(mUrl);
+    //mNetRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     mNetRequest.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 UBrowser/5.2.3285.46 Safari/537.36");
     mNetRequest.setHeader(QNetworkRequest::ContentLengthHeader, postData.length());
-    mNetRequest.setRawHeader("Origin","http://xueqiu.com");
-    mNetRequest.setRawHeader("Referer", "http://xueqiu.com/7739010226");
     mNetManager->post(mNetRequest,postData);
 }
 
@@ -62,7 +61,7 @@ void MainWindow::finishedSlot(QNetworkReply *reply)
             qDebug() << "redirection Url is " << redirectionTargetUrl.toString();
             QUrl url(redirectionTargetUrl.toString());
             mNetManager->get(QNetworkRequest(url));
-            //break;
+            break;
         }
 
         // when reply is no error
@@ -83,6 +82,10 @@ void MainWindow::finishedSlot(QNetworkReply *reply)
             {
                 result = QString(bytes);
             }
+
+            cookies = mNetManager->cookieJar()->cookiesForUrl(mUrl);
+            qDebug() << "COOKIES for" << mUrl.host() << cookies;
+
             qDebug() << result;
             ui->webView->setHtml(result);//直接用QWebView的setHtml直接加载返回的html数据
 
@@ -97,28 +100,25 @@ void MainWindow::finishedSlot(QNetworkReply *reply)
 
 void MainWindow::getZH(QString uid)
 {
-    //http://xueqiu.com/v4/stock/portfolio/stocks.json?size=1000&tuid=7739010226&pid=-1&category=1&type=1&_=1439457087039 1439460188
+    //http://xueqiu.com/v4/stock/portfolio/stocks.json?size=1000&tuid=7739010226&pid=-1&category=1&type=1&_=1439457087039
     QString url = "http://xueqiu.com/v4/stock/portfolio/stocks.json?size=1000&tuid=";
     url.append(uid);
     url.append("&pid=-1&category=1&type=1&_=");
-
-    QString postString = "size=1000&tuid=";
-    postString.append(uid);
-    postString.append("&pid=-1&category=1&type=1&_=");
 
     qlonglong nTime = QDateTime::currentDateTimeUtc().currentMSecsSinceEpoch();
     QString nTimeStr =QString::number(nTime);
 
     url.append(nTimeStr);
-    postString.append(nTimeStr);
-    QByteArray postData = postString.toUtf8();
-    qDebug() << postString;
 
-    mNetRequest.setUrl(QUrl(url));
-    mNetRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QVariant var;
+    var.setValue(cookies);
+
+    mUrl = QUrl(url);
+    mNetRequest.setUrl(mUrl);
+    mNetRequest.setHeader(QNetworkRequest::CookieHeader,var);
     mNetRequest.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 UBrowser/5.2.3285.46 Safari/537.36");
-    mNetRequest.setHeader(QNetworkRequest::ContentLengthHeader, postData.length());
-    mNetManager->post(mNetRequest,postData);
+    mNetRequest.setHeader(QNetworkRequest::ContentLengthHeader, 0);
+    mNetManager->get(mNetRequest);
 }
 
 void MainWindow::on_pushButton_clicked()

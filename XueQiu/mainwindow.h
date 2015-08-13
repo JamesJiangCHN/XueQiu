@@ -5,6 +5,8 @@
 #include <QTextCodec>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QNetworkCookieJar>
+#include <QNetworkCookie>
 
 namespace Ui {
 class MainWindow;
@@ -18,6 +20,8 @@ public:
 
     QNetworkRequest mNetRequest;
     QNetworkAccessManager *mNetManager;
+    QUrl mUrl;
+    QList<QNetworkCookie>  cookies;
 
 
     explicit MainWindow(QWidget *parent = 0);
