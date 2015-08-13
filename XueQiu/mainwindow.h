@@ -27,10 +27,14 @@ private slots:
     void on_pb_login_clicked();
     void finishedSlot(QNetworkReply *reply);
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
     void login(QString userName, QString pwd);
+
+    void getZH(QString uid);
 
 
 
