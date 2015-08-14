@@ -7,6 +7,14 @@
 #include <QNetworkRequest>
 #include <QNetworkCookieJar>
 #include <QNetworkCookie>
+#include <QStandardItemModel>
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include <QJsonObject>
+
+#define FLAG_LOGIN      1
+#define FLAG_ZH         2
+#define FLAG_ZHDETAIL   3
 
 namespace Ui {
 class MainWindow;
@@ -22,6 +30,10 @@ public:
     QNetworkAccessManager *mNetManager;
     QUrl mUrl;
     QList<QNetworkCookie>  cookies;
+
+    QStandardItemModel *standardItemModel;
+
+    int sendFlag;
 
 
     explicit MainWindow(QWidget *parent = 0);
@@ -39,8 +51,9 @@ private:
     void login(QString userName, QString pwd);
 
     void getZH(QString uid);
-
-
+    void getZHDetail(QString zhStr);
+    QString processZHJson(QByteArray zhArray);
+    void processZHDetailJson(QByteArray zhDetailArray);
 
 };
 

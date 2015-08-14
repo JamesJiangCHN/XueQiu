@@ -76,9 +76,9 @@
    <widget class="QWebView" name="webView">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>360</x>
       <y>100</y>
-      <width>801</width>
+      <width>491</width>
       <height>421</height>
      </rect>
     </property>
@@ -99,6 +99,16 @@
     </property>
     <property name="text">
      <string>组合</string>
+    </property>
+   </widget>
+   <widget class="QListView" name="listView">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>100</y>
+      <width>301</width>
+      <height>421</height>
+     </rect>
     </property>
    </widget>
   </widget>
