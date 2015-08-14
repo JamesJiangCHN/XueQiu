@@ -8,9 +8,12 @@
 #include <QNetworkCookieJar>
 #include <QNetworkCookie>
 #include <QStandardItemModel>
+#include <QStandardItem>
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QJsonObject>
+
+#include "stockzh.h"
 
 #define FLAG_LOGIN      1
 #define FLAG_ZH         2
@@ -44,6 +47,7 @@ private slots:
     void finishedSlot(QNetworkReply *reply);
 
     void on_pushButton_clicked();
+    void itemClicked(QModelIndex index);
 
 private:
     Ui::MainWindow *ui;
@@ -56,5 +60,7 @@ private:
     void processZHDetailJson(QByteArray zhDetailArray);
 
 };
+
+Q_DECLARE_METATYPE(StockZH)
 
 #endif // MAINWINDOW_H

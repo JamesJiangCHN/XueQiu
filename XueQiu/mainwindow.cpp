@@ -136,10 +136,11 @@ void MainWindow::getZH(QString uid)
 
 void MainWindow::getZHDetail(QString zhStr)
 {
+    QNetworkRequest getNetRequest;
     sendFlag = FLAG_ZHDETAIL;
-    //http://xueqiu.com/v4/stock/portfolio/stocks.json?size=1000&tuid=7739010226&pid=-1&category=1&type=1&_=1439457087039
-    QString url = "xueqiu.com/cubes/quote.json?code=";
-    url.append(zhStr);
+    //http://xueqiu.com/cubes/quote.json?code=ZH647226%2CZH068107%2CZH574335%2CZH575004%2CZH546373%2CZH000979%2CZH409754%2CZH556993%2CZH115767%2CZH000826%2CZH498955%2CZH539920%2CZH002007%2CZH534323%2CZH534252%2CZH533601%2CZH533656%2CZH197893%2CZH286494%2CZH264142%2CZH097694%2CZH191982%2CZH282360%2CZH302627%2CZH007568%2CZH002486%2CZH296316%2CZH232663%2CZH271658%2CZH192825%2CZH079046%2CZH212315%2CZH000497%2CZH106973%2CZH010389%2CZH094268%2CZH027601%2CZH024353%2CZH003694%2CZH123523%2CZH123518&return_hasexist=false&_=1439562874467
+    QString url = "http://xueqiu.com/cubes/quote.json?code=";
+    url.append(zhStr); //.replace(",", "%2C")
     url.append("&return_hasexist=false&_=");
 
     qlonglong nTime = QDateTime::currentDateTimeUtc().currentMSecsSinceEpoch();
@@ -147,15 +148,16 @@ void MainWindow::getZHDetail(QString zhStr)
 
     url.append(nTimeStr);
 
+    qDebug() << url;
+
     QVariant var;
     var.setValue(cookies);
 
     mUrl = QUrl(url);
-    mNetRequest.setUrl(mUrl);
-    mNetRequest.setHeader(QNetworkRequest::CookieHeader,var);
-    mNetRequest.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 UBrowser/5.2.3285.46 Safari/537.36");
-    mNetRequest.setHeader(QNetworkRequest::ContentLengthHeader, 0);
-    mNetManager->get(mNetRequest);
+    getNetRequest.setUrl(mUrl);
+    getNetRequest.setHeader(QNetworkRequest::CookieHeader,var);
+    getNetRequest.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 UBrowser/5.2.3285.46 Safari/537.36");
+    mNetManager->get(getNetRequest);
 
 }
 
@@ -207,12 +209,43 @@ void MainWindow::processZHDetailJson(QByteArray zhDetailArray)
             QVariantMap result = parse_doucment.toVariant().toMap();
 
             QMapIterator<QString, QVariant> i(result);
+            int j=0;
             while (i.hasNext()) {
                 i.next();
                 QVariantMap stockMap = i.value().toMap();
-                qDebug() << stockMap["symbol"].toString() << ": " <<  stockMap["net_value"].toString() << endl;
+                StockZH mStockZH(stockMap["symbol"].toString(),
+                        stockMap["name"].toString(),
+                        stockMap["net_value"].toFloat(),
+                        stockMap["daily_gain"].toFloat(),
+                        stockMap["monthly_gain"].toFloat(),
+                        stockMap["total_gain"].toFloat(),
+                        stockMap["annualized_gain"].toFloat(),
+                        stockMap["hasexist"].toBool());
+                QStandardItem *item = new QStandardItem(mStockZH.toString());
+                QVariant var;
+                var.setValue(mStockZH);
+                item->setData(var, Qt::UserRole);
+                if(j % 2 == 1)
+                {
+                    QLinearGradient linearGrad(QPointF(0, 0), QPointF(200, 200));
+                    linearGrad.setColorAt(0, Qt::yellow);
+                    linearGrad.setColorAt(1, Qt::red);
+                    QBrush brush(linearGrad);
+                    item->setBackground(brush);
+                }
+                standardItemModel->appendRow(item);
+                j++;
             }
+           ui->listView->setModel(standardItemModel);
+           connect(ui->listView,SIGNAL(clicked(QModelIndex)),this,SLOT(itemClicked(QModelIndex)));
 
         }
     }
+}
+
+/***槽函数：设置textEdit显示的内容***/
+void MainWindow::itemClicked(QModelIndex index)
+{
+    StockZH stockZH = ui->listView->model()->data(index, Qt::UserRole).value<StockZH>();
+    qDebug()<< stockZH.getSymbol();
 }
