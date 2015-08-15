@@ -12,6 +12,7 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QJsonObject>
+#include <QMessageBox>
 
 #include "stockzh.h"
 
@@ -46,15 +47,13 @@ public:
 private slots:
     void on_pb_login_clicked();
     void finishedSlot(QNetworkReply *reply);
-
-    void on_pushButton_clicked();
     void itemClicked(QModelIndex index);
 
 private:
     Ui::MainWindow *ui;
 
     void login(QString userName, QString pwd);
-
+    void checkLogin();
     void getZH(QString uid);
     void getZHDetail(QString zhStr);
     QString processZHJson(QByteArray zhArray);
