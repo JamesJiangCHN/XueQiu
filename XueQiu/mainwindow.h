@@ -36,6 +36,7 @@ public:
 
     QStandardItemModel *standardItemModel;
 
+    QString uid;
     int sendFlag;
 
 

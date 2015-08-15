@@ -34,3 +34,8 @@ QString StockZH::getSymbol()
     return this->symbol;
 }
 
+float  StockZH:: getTotalGain()
+{
+    return this->total_gain;
+}
+

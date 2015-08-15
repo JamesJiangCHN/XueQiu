@@ -14,7 +14,9 @@ public:
             float total_gain,           //总收益 百分比
             float annualized_gain,      //年收益
             bool hasexist  );
+
     QString getSymbol();
+    float   getTotalGain();
     QString toString();
 
     /*
