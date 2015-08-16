@@ -13,6 +13,8 @@
 #include <QJsonParseError>
 #include <QJsonObject>
 #include <QMessageBox>
+#include <QSystemTrayIcon>
+#include <QMenu>
 
 #include "stockzh.h"
 
@@ -30,13 +32,6 @@ class MainWindow : public QMainWindow
 
 public:
 
-    QNetworkRequest mNetRequest;
-    QNetworkAccessManager *mNetManager;
-    QUrl mUrl;
-    QList<QNetworkCookie>  cookies;
-
-    QStandardItemModel *standardItemModel;
-
     QString uid;
     int sendFlag;
 
@@ -48,9 +43,38 @@ private slots:
     void on_pb_login_clicked();
     void finishedSlot(QNetworkReply *reply);
     void itemClicked(QModelIndex index);
+    void closeEvent(QCloseEvent *e);
 
+    void iconActivated(QSystemTrayIcon::ActivationReason reason);
+    void enterEvent(QEvent *);
+    void leaveEvent(QEvent *);
+
+    void on_pushButton_clicked();
+
+    void mousePressEvent(QMouseEvent *lpEvent);
+    void mouseReleaseEvent(QMouseEvent *lpEvent);
+    void mouseMoveEvent(QMouseEvent *lpEvent);
 private:
     Ui::MainWindow *ui;
+
+    QNetworkRequest mNetRequest;
+    QNetworkAccessManager *mNetManager;
+    QUrl mUrl;
+    QList<QNetworkCookie>  cookies;
+
+    QStandardItemModel *standardItemModel;
+
+    QSystemTrayIcon *myTrayIcon;
+    QMenu *myMenu;
+    QAction *restoreWinAction;
+    QAction *quitAction;
+
+    bool    m_MousePressed;
+    QPoint  m_MousePos;
+    QPoint  m_WindowPos;
+
+    void CreatTrayMenu();
+    void CreatTrayIcon();
 
     void login(QString userName, QString pwd);
     void checkLogin();

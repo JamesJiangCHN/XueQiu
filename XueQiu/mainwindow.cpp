@@ -1,15 +1,20 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QCloseEvent>
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
+    setWindowFlags ( windowFlags()|Qt::FramelessWindowHint|Qt::WindowTitleHint|Qt::WindowStaysOnTopHint);
+
     mNetManager = new QNetworkAccessManager(this);
     QObject::connect(mNetManager, SIGNAL(finished(QNetworkReply*)),
                  this, SLOT(finishedSlot(QNetworkReply*)));
+    CreatTrayIcon();
 }
 
 MainWindow::~MainWindow()
@@ -288,4 +293,126 @@ void MainWindow::itemClicked(QModelIndex index)
 {
     StockZH stockZH = ui->listView->model()->data(index, Qt::UserRole).value<StockZH>();
     qDebug()<< stockZH.getSymbol();
+}
+
+//关闭到托盘---------
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    e->ignore();
+    this->hide();
+}
+
+void MainWindow::CreatTrayIcon()
+{
+    CreatTrayMenu();
+
+    if (!QSystemTrayIcon::isSystemTrayAvailable())      //判断系统是否支持系统托盘图标
+    {
+        return;
+    }
+
+    myTrayIcon = new QSystemTrayIcon(this);
+
+    myTrayIcon->setIcon(QIcon(":/images/stock.ico"));   //设置图标图片
+    setWindowIcon(QIcon(":/images/stock.ico"));  //把图片设置到窗口上
+
+    myTrayIcon->setToolTip("Stock");    //托盘时，鼠标放上去的提示信息
+
+    myTrayIcon->showMessage("Stock","Hi,This is my trayIcon",QSystemTrayIcon::Information,10000);
+    myTrayIcon->setContextMenu(myMenu);     //设置托盘上下文菜单
+    myTrayIcon->show();
+    this->connect(myTrayIcon,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+
+}
+
+void MainWindow::CreatTrayMenu()
+{
+    restoreWinAction = new QAction("还 原(&R)",this);
+    quitAction = new QAction("退出(&Q)",this);
+
+    this->connect(restoreWinAction,SIGNAL(triggered()),this,SLOT(showNormal()));
+    this->connect(quitAction,SIGNAL(triggered()),qApp,SLOT(quit()));
+
+    myMenu = new QMenu((QWidget*)QApplication::desktop());
+
+    myMenu->addAction(restoreWinAction);
+    myMenu->addSeparator();     //加入一个分离符
+    myMenu->addAction(quitAction);
+}
+
+
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch(reason)
+    {
+    case QSystemTrayIcon::Trigger:
+    case QSystemTrayIcon::DoubleClick:
+        showNormal();
+        break;
+    case QSystemTrayIcon::MiddleClick:
+        myTrayIcon->showMessage("雪球","雪球第三方客户端",QSystemTrayIcon::Information,10000);
+        break;
+
+    default:
+        break;
+    }
+}
+/*侧边栏停靠*/
+void MainWindow::enterEvent(QEvent *)
+{
+    QRect rc;
+    QRect rect;
+    rect = this->geometry();
+    rc.setRect(rect.x(),rect.y(),rect.width(),rect.height());
+    if(rect.top()<0)
+    {
+        rect.setX(rc.x());
+        rect.setY(0);
+        move(rc.x(),-2);
+    }
+}
+
+void MainWindow::leaveEvent(QEvent *)
+{
+    QRect rc;
+    QRect rect;
+    rect = this->geometry();
+    rc.setRect(rect.x(),rect.y(),rect.width(),rect.height());
+    if(rect.top()<0)
+    {
+        move(rc.x(),-rc.height()+2);
+    }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *lpEvent)
+{
+    //__super::mousePressEvent(lpEvent);
+    if (lpEvent->button() == Qt::LeftButton)
+    {
+        m_WindowPos = this->pos();
+        m_MousePos = lpEvent->globalPos();
+        this->m_MousePressed = true;
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *lpEvent)
+{
+    //__super::mouseReleaseEvent(lpEvent);
+    if (lpEvent->button() == Qt::LeftButton)
+    {
+        this->m_MousePressed = false;
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *lpEvent)
+{
+    if (m_MousePressed)
+    {
+        this->move(m_WindowPos + (lpEvent->globalPos() - m_MousePos));
+    }
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    this->hide();
 }

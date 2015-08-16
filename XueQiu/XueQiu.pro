@@ -24,3 +24,6 @@ HEADERS  += mainwindow.h \
     stockzh.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    images/images.qrc
