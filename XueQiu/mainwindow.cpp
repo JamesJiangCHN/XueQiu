@@ -15,6 +15,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(mNetManager, SIGNAL(finished(QNetworkReply*)),
                  this, SLOT(finishedSlot(QNetworkReply*)));
     CreatTrayIcon();
+
+    timer = new QTimer( this );
+    connect(timer,SIGNAL(timeout()),SLOT(checkZHChange()));
 }
 
 MainWindow::~MainWindow()
@@ -200,6 +203,7 @@ void MainWindow::processZHDetailJson(QByteArray zhDetailArray)
                 QVariant var;
                 var.setValue(mStockZH);
                 item->setData(var, Qt::UserRole);
+                item->setCheckable(true);
                 if(j % 2 == 1)
                 {
                     QLinearGradient linearGrad(QPointF(0, 0), QPointF(200, 200));
@@ -216,6 +220,94 @@ void MainWindow::processZHDetailJson(QByteArray zhDetailArray)
 
         }
     }
+    timer->start(10000);
+}
+
+void MainWindow::checkZHChange()
+{
+    qDebug() << "Check";
+    //停止 处理信息
+    if (timer->isActive())
+    {
+        timer->stop();
+    }
+
+    int rows = standardItemModel->rowCount();
+    for (int i=0;i<rows;++i)
+    {
+        QStandardItem* childItem = standardItemModel->item(i);
+        if (childItem->checkState())
+        {
+            getZHChange(childItem->data(Qt::UserRole).value<StockZH>().getSymbol());
+        }
+    }
+
+    //开启定时器
+    timer->start(10000);
+}
+
+void MainWindow::getZHChange(QString zhSymbol)
+{
+    sendFlag = FLAG_ZHCHANGE;
+
+    if(zhSymbol.isEmpty())
+    {
+        return;
+    }
+    qDebug() << "getChange" << zhSymbol;
+    //http://xueqiu.com/cubes/rebalancing/history.json?cube_symbol=ZH191982&count=1&page=1
+    QString url = "http://xueqiu.com/cubes/rebalancing/history.json?cube_symbol=";
+    url.append(zhSymbol); //.replace(",", "%2C")
+    url.append("&count=1&page=1");
+    mUrl = QUrl(url);
+    //qDebug() << url;
+
+    QVariant var;
+    var.setValue(cookies);
+
+    QNetworkRequest getNetRequest;
+    getNetRequest.setUrl(mUrl);
+    getNetRequest.setHeader(QNetworkRequest::CookieHeader,var);
+    getNetRequest.setHeader(QNetworkRequest::UserAgentHeader,
+                            "Mozilla/5.0 (Windows NT 6.1; WOW64) \
+                            AppleWebKit/537.36 (KHTML, like Gecko) \
+                            Chrome/41.0.2272.118 UBrowser/5.2.3285.46 Safari/537.36");
+    mNetManager->get(getNetRequest);
+
+}
+
+void MainWindow::processZHChange(QByteArray zhChangeArray)
+{
+    QJsonParseError json_error;
+    QJsonDocument parse_doucment = QJsonDocument::fromJson(zhChangeArray, &json_error);
+
+    if(json_error.error == QJsonParseError::NoError)
+    {
+        if(parse_doucment.isObject())
+        {
+            QVariantMap result = parse_doucment.toVariant().toMap();
+
+            int totalCount = result["totalCount"].toInt();
+            qDebug() << QString::number(totalCount)+":";
+            QVariantList list = result["list"].toList();
+
+            QVariantList rebalancing_histories = list[0].toMap().value("rebalancing_histories").toList();
+
+            QListIterator<QVariant> i(rebalancing_histories);
+            while (i.hasNext()) {
+
+                QVariantMap stockMap = i.next().toMap();
+                QString chStr = stockMap["stock_name"].toString()+" "
+                        +stockMap["stock_symbol"].toString()+" ￥"
+                        +stockMap["price"].toString()+"\n"
+                        +stockMap["prev_weight"].toString()+"%  ->  "
+                        +stockMap["target_weight"].toString()+"%\n";
+                qDebug() << chStr.toLocal8Bit();
+
+            }
+        }
+    }
+
 }
 
 
@@ -276,6 +368,10 @@ void MainWindow::finishedSlot(QNetworkReply *reply)
             else if(sendFlag == FLAG_ZHDETAIL)
             {
                 processZHDetailJson(bytes);
+            }
+            else if(sendFlag == FLAG_ZHCHANGE)
+            {
+                processZHChange(bytes);
             }
 
         }
@@ -416,3 +512,5 @@ void MainWindow::on_pushButton_clicked()
 {
     this->hide();
 }
+
+

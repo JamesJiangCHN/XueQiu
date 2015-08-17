@@ -15,12 +15,14 @@
 #include <QMessageBox>
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QTimer>
 
 #include "stockzh.h"
 
 #define FLAG_LOGIN      1
 #define FLAG_ZH         2
 #define FLAG_ZHDETAIL   3
+#define FLAG_ZHCHANGE   4
 
 namespace Ui {
 class MainWindow;
@@ -54,6 +56,8 @@ private slots:
     void mousePressEvent(QMouseEvent *lpEvent);
     void mouseReleaseEvent(QMouseEvent *lpEvent);
     void mouseMoveEvent(QMouseEvent *lpEvent);
+
+    void checkZHChange();
 private:
     Ui::MainWindow *ui;
 
@@ -69,6 +73,8 @@ private:
     QAction *restoreWinAction;
     QAction *quitAction;
 
+    QTimer *timer;
+
     bool    m_MousePressed;
     QPoint  m_MousePos;
     QPoint  m_WindowPos;
@@ -83,6 +89,9 @@ private:
     QString processZHJson(QByteArray zhArray);
     void processZHDetailJson(QByteArray zhDetailArray);
 
+
+    void getZHChange(QString zhSymbol);
+    void processZHChange(QByteArray zhChangeArray);
 };
 
 Q_DECLARE_METATYPE(StockZH)
