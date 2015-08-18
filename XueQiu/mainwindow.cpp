@@ -297,11 +297,16 @@ void MainWindow::processZHChange(QByteArray zhChangeArray)
             while (i.hasNext()) {
 
                 QVariantMap stockMap = i.next().toMap();
-                QString chStr = stockMap["stock_name"].toString()+" "
+                QString dtStr =  QDateTime::currentDateTimeUtc()
+                        .fromMSecsSinceEpoch(stockMap["created_at"].toULongLong()).toString("yyyy-MM-dd hh:mm:ss");
+                QString chStr = dtStr+"  "
+                        +stockMap["stock_name"].toString()+" "
                         +stockMap["stock_symbol"].toString()+" ￥"
                         +stockMap["price"].toString()+"\n"
                         +stockMap["prev_weight"].toString()+"%  ->  "
                         +stockMap["target_weight"].toString()+"%\n";
+
+                ui->statusBar->showMessage(chStr);
                 qDebug() << chStr.toLocal8Bit();
 
             }
