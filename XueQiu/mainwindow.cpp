@@ -298,7 +298,8 @@ void MainWindow::processZHChange(QByteArray zhChangeArray)
 
                 QVariantMap stockMap = i.next().toMap();
                 QString dtStr =  QDateTime::currentDateTimeUtc()
-                        .fromMSecsSinceEpoch(stockMap["created_at"].toULongLong()).toString("yyyy-MM-dd hh:mm:ss");
+                        .fromMSecsSinceEpoch(stockMap["created_at"].toULongLong())
+                        .toString("yyyy-MM-dd hh:mm:ss");
                 QString chStr = dtStr+"  "
                         +stockMap["stock_name"].toString()+" "
                         +stockMap["stock_symbol"].toString()+" ￥"
