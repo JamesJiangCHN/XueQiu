@@ -16,7 +16,10 @@
 #include <QSystemTrayIcon>
 #include <QMenu>
 #include <QTimer>
+#include <QPropertyAnimation>
+#include <QDesktopWidget>
 
+#include "remindform.h"
 #include "stockzh.h"
 
 #define FLAG_LOGIN      1
@@ -58,6 +61,9 @@ private slots:
     void mouseMoveEvent(QMouseEvent *lpEvent);
 
     void checkZHChange();
+
+    void closeAnimation();
+    void clearAll();
 private:
     Ui::MainWindow *ui;
 
@@ -79,6 +85,12 @@ private:
     QPoint  m_MousePos;
     QPoint  m_WindowPos;
 
+    QPropertyAnimation* animation;
+    QTimer *remainTimer;
+    QDesktopWidget desktop;
+    RemindForm *remind;
+
+
     void CreatTrayMenu();
     void CreatTrayIcon();
 
@@ -89,9 +101,10 @@ private:
     QString processZHJson(QByteArray zhArray);
     void processZHDetailJson(QByteArray zhDetailArray);
 
-
     void getZHChange(QString zhSymbol);
     void processZHChange(QByteArray zhChangeArray);
+
+     void showAnimation();
 };
 
 Q_DECLARE_METATYPE(StockZH)
