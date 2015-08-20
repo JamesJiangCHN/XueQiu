@@ -16,17 +16,17 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    stock.cpp \
+    #stock.cpp \
     stockzh.cpp \
-    remindform.cpp
+    reminddialog.cpp
 
 HEADERS  += mainwindow.h \
-    stock.h \
+    #stock.h \
     stockzh.h \
-    remindform.h
+    reminddialog.h
 
 FORMS    += mainwindow.ui \
-    remindform.ui
+    reminddialog.ui
 
 RESOURCES += \
     images/images.qrc

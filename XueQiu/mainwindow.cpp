@@ -18,7 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     timer = new QTimer( this );
     connect(timer,SIGNAL(timeout()),SLOT(checkZHChange()));
-    remind = new RemindForm();
+    remind = new RemindDialog;
+    qDebug() << "Desktop"+QString::number(desktop.availableGeometry().width()) + ", "+QString::number(desktop.availableGeometry().height());
     remind->move((desktop.availableGeometry().width()-remind->width()),
                  desktop.availableGeometry().height());//初始化位置到右下角
 }
@@ -524,6 +525,8 @@ void MainWindow::on_pushButton_clicked()
 
 //弹出动画
 void MainWindow::showAnimation(){
+    qDebug() << "Show" + QString::number(remind->x()) + "," + QString::number(remind->y());
+    remind->show();
     //显示弹出框动画
     animation=new QPropertyAnimation(remind,"pos");
     animation->setDuration(2000);
@@ -539,11 +542,14 @@ void MainWindow::showAnimation(){
 }
 //关闭动画
 void MainWindow::closeAnimation(){
-    //清除Timer指针和信号槽
-    remainTimer->stop();
-    disconnect(remainTimer,SIGNAL(timeout()),this,SLOT(closeAnimation()));
-    delete remainTimer;
-    remainTimer=NULL;
+    qDebug() << "End" + QString::number(remind->x()) + "," + QString::number(remind->y());
+    if(remainTimer!=NULL){
+        //清除Timer指针和信号槽
+        remainTimer->stop();
+        disconnect(remainTimer,SIGNAL(timeout()),this,SLOT(closeAnimation()));
+        delete remainTimer;
+        remainTimer=NULL;
+    }
     //弹出框回去动画
     animation->setStartValue(QPoint(remind->x(),remind->y()));
     animation->setEndValue(QPoint((desktop.availableGeometry().width()-remind->width()),
@@ -554,9 +560,13 @@ void MainWindow::closeAnimation(){
 }
 //清理动画指针
 void MainWindow::clearAll(){
-    disconnect(animation,SIGNAL(finished()),this,SLOT(clearAll()));
-    delete animation;
-    animation=NULL;
+    remind->hide();
+    if(animation!=NULL)
+    {
+        disconnect(animation,SIGNAL(finished()),this,SLOT(clearAll()));
+        delete animation;
+        animation=NULL;
+    }
 }
 
 

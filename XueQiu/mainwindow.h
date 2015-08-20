@@ -19,7 +19,7 @@
 #include <QPropertyAnimation>
 #include <QDesktopWidget>
 
-#include "remindform.h"
+#include "reminddialog.h"
 #include "stockzh.h"
 
 #define FLAG_LOGIN      1
@@ -88,7 +88,7 @@ private:
     QPropertyAnimation* animation;
     QTimer *remainTimer;
     QDesktopWidget desktop;
-    RemindForm *remind;
+    RemindDialog *remind;
 
 
     void CreatTrayMenu();
