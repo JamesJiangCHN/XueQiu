@@ -15,8 +15,12 @@ public:
     explicit RemindDialog(QWidget *parent = 0);
     ~RemindDialog();
 
+    void addLink(QString detail, QString url);
+    void clearLinks();
 private:
     Ui::RemindDialog *ui;
+
+    QVector<QWidget*> widgetvec;
 };
 
 #endif // REMINDDIALOG_H

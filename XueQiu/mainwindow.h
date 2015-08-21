@@ -102,9 +102,9 @@ private:
     void processZHDetailJson(QByteArray zhDetailArray);
 
     void getZHChange(QString zhSymbol);
-    void processZHChange(QByteArray zhChangeArray);
 
-     void showAnimation();
+    void showAnimation();
+    void processZHChange(QString zhName, QByteArray zhChangeArray);
 };
 
 Q_DECLARE_METATYPE(StockZH)

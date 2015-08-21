@@ -280,7 +280,7 @@ void MainWindow::getZHChange(QString zhSymbol)
 
 }
 
-void MainWindow::processZHChange(QByteArray zhChangeArray)
+void MainWindow::processZHChange(QString zhName, QByteArray zhChangeArray)
 {
     QJsonParseError json_error;
     QJsonDocument parse_doucment = QJsonDocument::fromJson(zhChangeArray, &json_error);
@@ -313,6 +313,7 @@ void MainWindow::processZHChange(QByteArray zhChangeArray)
 
                 ui->statusBar->showMessage(chStr);
                 qDebug() << chStr.toLocal8Bit();
+                remind->addLink(chStr, "http://xueqiu.com/P/"+zhName);
                 showAnimation();
             }
         }
@@ -325,7 +326,8 @@ void MainWindow::processZHChange(QByteArray zhChangeArray)
 void MainWindow::finishedSlot(QNetworkReply *reply)
 {
     QVariant statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    qDebug() << "statusCode is " << statusCode.toString();
+
+    qDebug()<< "statusCode is " << statusCode.toString();
     QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
     QString charset = contentType.mid(contentType.indexOf("charset=") + QString("charset=").length());
 
@@ -381,7 +383,13 @@ void MainWindow::finishedSlot(QNetworkReply *reply)
             }
             else if(sendFlag == FLAG_ZHCHANGE)
             {
-                processZHChange(bytes);
+                QString urlStr = reply->url().toString().section('=', 1, 1);
+                if(!urlStr.isEmpty())
+                {
+                   urlStr.chop(6);
+                   processZHChange(urlStr,bytes);
+                }
+
             }
 
         }
@@ -538,7 +546,7 @@ void MainWindow::showAnimation(){
     //设置弹出框显示2秒、在弹回去
     remainTimer=new QTimer();
     connect(remainTimer,SIGNAL(timeout()),this,SLOT(closeAnimation()));
-    remainTimer->start(4000);//弹出动画2S,停留2S回去
+    remainTimer->start(7000);//弹出动画2S,停留5S回去
 }
 //关闭动画
 void MainWindow::closeAnimation(){
@@ -560,6 +568,7 @@ void MainWindow::closeAnimation(){
 }
 //清理动画指针
 void MainWindow::clearAll(){
+    remind->clearLinks();
     remind->hide();
     if(animation!=NULL)
     {
